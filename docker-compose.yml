@@ -1,0 +1,31 @@
+version: '3.7'
+
+configs:
+  index_html:
+    file: ./index.html
+
+services:
+  web:
+    image: python:latest
+    command: python -m http.server 8080
+    working_dir: /var/www
+    configs:
+      - source: index_html
+        target: /var/www/index.html
+    networks:
+      - traefik-public
+    deploy:
+      resources:
+            limits:
+                memory: 256M
+      labels:
+        - traefik.frontend.rule=Host:swarm-dev.sigma-it.local
+        - traefik.enable=true
+        - traefik.port=8080
+        - traefik.tags=${TRAEFIK_PUBLIC_TAG:-traefik-public}
+        - traefik.docker.network=traefik-public
+        - traefik.webservice.frontend.entryPoints=http
+
+networks:
+  traefik-public:
+    external: true
